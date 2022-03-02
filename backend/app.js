@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -6,15 +6,10 @@ const path = require("path");
 const helmet = require("helmet"); // Protect HTTP headers
 // const fileupload = require("express-fileupload");
 
-// const subscriberRoutes = require("./routes/subscriber");
-// const volunteerRoutes = require("./routes/volunteer");
-// const sessionRoutes = require("./routes/session");
-// const availabilityRoutes = require("./routes/availability");
+const memberRoutes = require("./routes/member");
 
 // Models
-// const { volunteer } = require("./models");
-// const { session } = require("./models");
-// const { availability } = require("./models");
+// const { member } = require("./models");
 
 //association tables volunteer/availability et session/availability
 // availability.belongsTo(volunteer);
@@ -23,8 +18,6 @@ const helmet = require("helmet"); // Protect HTTP headers
 // module.exports = { session, availability };
 
 app.use(cors()); // Security CORS
-
-// app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,8 +26,8 @@ app.use(helmet());
 
 // **** ROUTES ****
 
-// * Subscriber
-// app.use("/api/subscriber", subscriberRoutes);
+// * Member
+app.use("/api/member", memberRoutes);
 
 // // * Volunteer
 // app.use("/api/volunteer", volunteerRoutes);

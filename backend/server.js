@@ -1,9 +1,9 @@
-// require("dotenv").config();
+require("dotenv").config();
 
-// const app = require("./app");
+const app = require("./app");
 const http = require("http");
 
-// const db = require("./models");
+const db = require("./models");
 
 const server = http.createServer(app);
 

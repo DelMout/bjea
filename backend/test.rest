@@ -1,0 +1,13 @@
+### create a new member ###
+POST http://localhost:3001/api/member/create
+content-type: application/json
+
+
+{
+    "email": "dlphn@hotmail.fr",
+    "last_name": "Moutault",
+    "first_name": "Delphine",
+    "cotisation":1,
+    "caution":1,
+    "password":"DDDddd1111"
+}
