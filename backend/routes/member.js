@@ -29,4 +29,10 @@ router.post("/emailpassword/:email", memberCtrl.emailPassword);
 // * send email to all members
 router.post("/emailinfo", memberCtrl.emailInfo); //! Admin
 
+//* Update cotisation of member
+router.put("/cotisation/:memberid/:cotisation", memberCtrl.updateCotisation); //! Admin
+
+//* Update caution of member
+router.put("/caution/:memberid/:caution", memberCtrl.updateCaution); //! Admin
+
 module.exports = router;

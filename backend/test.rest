@@ -36,3 +36,21 @@ content-type: application/json
     "players":"2-5",
     "inStock":1
 }
+
+### Update cotisation of a member ###
+PUT http://localhost:3001/api/member/cotisation/2/0
+
+### Update caution of a member ###
+PUT http://localhost:3001/api/member/caution/2/0
+
+### Out of stock a game ###
+PUT http://localhost:3001/api/game/outofstock/1/2
+
+### Into stock a game ###
+PUT http://localhost:3001/api/game/intostock/1
+
+### See all categories ###
+GET http://localhost:3001/api/category/getallcategories
+
+### See all games ###
+GET http://localhost:3001/api/game/getallgames

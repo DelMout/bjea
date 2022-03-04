@@ -8,6 +8,7 @@ const helmet = require("helmet"); // Protect HTTP headers
 
 const memberRoutes = require("./routes/member");
 const gameRoutes = require("./routes/game");
+const categoryRoutes = require("./routes/category");
 
 // Models
 const { member } = require("./models");
@@ -31,6 +32,9 @@ app.use("/api/member", memberRoutes);
 
 // * Game
 app.use("/api/game", gameRoutes);
+
+// * Category
+app.use("/api/category", categoryRoutes);
 
 // * Access images
 app.use("/images/", express.static(path.join(__dirname, "images")));

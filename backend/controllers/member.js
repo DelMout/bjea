@@ -234,3 +234,37 @@ exports.emailInfo = (req, res) => {
 		})
 		.catch((err) => res.status(401).send(err));
 };
+
+//* Update cotisation of member
+exports.updateCotisation = (req, res) => {
+	member
+		.update(
+			{
+				cotisation: req.params.cotisation,
+			},
+			{ where: { id: req.params.memberid } }
+		)
+		.then(() => {
+			res.send("cotisation has been updated !");
+		})
+		.catch((err) => {
+			res.status(401).send(err);
+		});
+};
+
+//* Update caution of member
+exports.updateCaution = (req, res) => {
+	member
+		.update(
+			{
+				caution: req.params.caution,
+			},
+			{ where: { id: req.params.memberid } }
+		)
+		.then(() => {
+			res.send("caution has been updated !");
+		})
+		.catch((err) => {
+			res.status(401).send(err);
+		});
+};
