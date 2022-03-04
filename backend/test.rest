@@ -11,3 +11,28 @@ content-type: application/json
     "caution":1,
     "password":"DDDddd1111"
 }
+
+
+### Login for a  member admin ###
+POST http://localhost:3001/api/member/login
+content-type: application/json
+
+{
+    "email": "del.mout@laposte.net",
+    "password":"DDDddd1111"
+}
+
+### get all members ###
+GET http://localhost:3001/api/member/getallmembers
+
+### Create a new game ###
+POST http://localhost:3001/api/game/create
+content-type: application/json
+
+{
+    "name": "Les aventuriers du rail (Europe)",
+    "category":"Plateau",
+    "brand":"Days of Wonder",
+    "players":"2-5",
+    "inStock":1
+}
