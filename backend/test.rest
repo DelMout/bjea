@@ -30,10 +30,10 @@ POST http://localhost:3001/api/game/create
 content-type: application/json
 
 {
-    "name": "Les aventuriers du rail (Europe)",
-    "category":"Plateau",
-    "brand":"Days of Wonder",
-    "players":"2-5",
+    "name": "Jarnac",
+    "category":"Lettres",
+    "brand":"Blackrock games",
+    "players":"2",
     "inStock":1
 }
 
