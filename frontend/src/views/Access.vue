@@ -53,6 +53,7 @@
 </template>
 <script>
 import axios from "axios";
+import { mapMutations, mapState } from "vuex";
 
 export default {
 	data() {
@@ -62,10 +63,19 @@ export default {
 			forgot: false,
 		};
 	},
+	computed: {
+		...mapState([
+			// "token",
+			"connected",
+			// "expired",
+		]),
+	},
 	methods: {
+		...mapMutations(["IS_TRUE"]),
 		//* To connect
 		toConnect: function () {
 			console.log("on y est !");
+			console.log("connected =" + this.$store.state.connected);
 			axios
 				.post(process.env.VUE_APP_API + "member/login", {
 					email: this.email,
@@ -73,6 +83,8 @@ export default {
 				})
 				.then(() => {
 					console.log("you are connected !");
+					this.$store.commit("IS_TRUE");
+					console.log("connected =" + this.$store.state.connected);
 				})
 				.catch((err) => {
 					if (err.response.data === "Password not OK") {
