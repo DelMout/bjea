@@ -2,17 +2,19 @@
 	<div id="nav">
 		<router-link to="/">Jeux</router-link> |
 		<router-link to="/access">Accès Admin</router-link>
+		| <router-link to="/adherents">Adhérents</router-link> |
+		<router-link to="/mail_adherents">Email</router-link>
 	</div>
 	<router-view />
 </template>
 
 <style>
 #app {
-	font-family: Avenir, Helvetica, Arial, sans-serif;
+	font-family: Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-align: center;
-	color: #2c3e50;
+	color: white;
 }
 
 #nav {
@@ -21,7 +23,7 @@
 
 #nav a {
 	font-weight: bold;
-	color: #5c6268;
+	color: #979fa8;
 }
 
 #nav a.router-link-exact-active {

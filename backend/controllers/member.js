@@ -134,6 +134,18 @@ exports.jeton = (req, res) => {
 		});
 };
 
+//* Find member from his id
+exports.memberId = (req, res) => {
+	member
+		.findOne({ where: { id: req.params.id } })
+		.then((obj) => {
+			res.status(200).send(obj.first_name + " " + obj.last_name);
+		})
+		.catch((err) => {
+			res.status(401).send(err);
+		});
+};
+
 // * Send an email for password forgotten
 exports.emailPassword = (req, res) => {
 	let transporter = nodemailer.createTransport({

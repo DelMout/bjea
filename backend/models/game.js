@@ -15,8 +15,12 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
-			players: {
-				type: DataTypes.STRING,
+			players_mini: {
+				type: DataTypes.TINYINT,
+				allowNull: true,
+			},
+			players_maxi: {
+				type: DataTypes.TINYINT,
 				allowNull: true,
 			},
 			inStock: {

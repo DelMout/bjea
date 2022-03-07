@@ -23,6 +23,9 @@ router.put("/newjeton/:email", memberCtrl.newjeton); //! admin
 //* Find member from his jeton
 router.get("/fromjeton/:jeton", memberCtrl.jeton);
 
+//* Find member from his id
+router.get("/fromid/:id", memberCtrl.memberId);
+
 // * send email for updating password
 router.post("/emailpassword/:email", memberCtrl.emailPassword);
 

@@ -11,6 +11,7 @@
     "axios": "^0.26.0",
     "core-js": "^3.6.5",
     "dotenv": "^16.0.0",
+    "form-data": "^4.0.0",
     "primeicons": "^5.0.0",
     "primevue": "^3.12.1",
     "vue": "^3.0.0",
