@@ -1,4 +1,5 @@
 const { game } = require("../models");
+const fs = require("fs-extra"); // handle files
 
 //* Create a new game
 exports.createGame = (req, res) => {
@@ -16,6 +17,7 @@ exports.createGame = (req, res) => {
 			res.status(200).send("New game created !");
 		})
 		.catch((err) => {
+			// res.status(401).send(err);
 			res.status(401).send(err.errors[0].message);
 		});
 };

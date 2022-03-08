@@ -142,7 +142,7 @@ exports.memberId = (req, res) => {
 			res.status(200).send(obj.first_name + " " + obj.last_name);
 		})
 		.catch((err) => {
-			res.status(401).send(err);
+			res.status(200).send("null");
 		});
 };
 

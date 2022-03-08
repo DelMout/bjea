@@ -1,14 +1,14 @@
 <template>
 	<div class="home">
 		<img src="../assets/logo_bjea.jpg" alt="logo bjea" width="100" />
-		<div>
+		<!-- <div>
 			<Button
 				id=""
 				label="Ajouter un jeu"
 				class="p-button-raised p-button-success"
-				@click="createGame"
+				@click="wantCreateGame"
 			/>
-		</div>
+		</div> -->
 		<div>
 			<table>
 				<tr>
@@ -104,6 +104,59 @@
 						/>
 					</td>
 				</tr>
+				<!-- Creation a new game -->
+				<tr class="creation">
+					<th>Photo</th>
+					<th>Nom</th>
+					<th>Stock</th>
+					<th>Emprunteur</th>
+					<th>Catégorie</th>
+					<th>Marque</th>
+					<th class="short">
+						Mini<br />
+						joueurs
+					</th>
+					<th class="short">Maxi<br />joueurs</th>
+					<th class="modif_button"></th>
+				</tr>
+				<tr class="creation">
+					<td>
+						<div class="uploadFile">
+							<button class="btn-upload">Choisir un fichier</button>
+							<input type="file" name="image" @change="onFileChange" />
+						</div>
+					</td>
+					<td>
+						<input class="creation" type="text" v-model="nameCrea" />
+					</td>
+					<td>EN STOCK</td>
+					<td>Ne pas renseigner</td>
+					<td>
+						<Dropdown
+							class="creation"
+							v-model="categoryCrea"
+							:options="categories"
+							optionLabel="category"
+							optionValue="category"
+						/>
+					</td>
+					<td>
+						<input class="creation" type="text" v-model="brandCrea" />
+					</td>
+					<td class="short">
+						<input type="text" class="short creation" v-model="players_miniCrea" />
+					</td>
+					<td class="short">
+						<input type="text" class="short creation" v-model="players_maxiCrea" />
+					</td>
+					<td class="modif_button">
+						<Button
+							label="Ajouter"
+							class="p-button-raised p-button-success"
+							@click="creaGame"
+						/>
+					</td>
+				</tr>
 			</table>
 		</div>
 	</div>
@@ -112,6 +165,7 @@
 <script>
 // @ is an alias to /src
 import axios from "axios";
+// import FormData from "form-data";
 
 export default {
 	name: "Home",
@@ -125,10 +179,17 @@ export default {
 			styleSaved: "",
 			categories: [],
 			categoryModel: "",
+			nameCrea: "",
+			categoryCrea: "",
+			brandCrea: "",
+			players_miniCrea: "",
+			players_maxiCrea: "",
+			image: null,
 		};
 	},
 	created: function () {
 		this.getAllGames();
+		this.displayCategories();
 	},
 	methods: {
 		//* Get all games
@@ -310,6 +371,67 @@ export default {
 				})
 				.catch((err) => console.log(err));
 		},
+
+		//* Select a photo
+		onFileChange: function (event) {
+			this.image = event.target.files[0];
+		},
+
+		//* Save a new game
+		creaGame: function () {
+			if (
+				this.nameCrea === "" ||
+				this.categoryCrea === "" ||
+				this.brandCrea === "" ||
+				this.players_miniCrea === "" ||
+				this.players_maxiCrea === ""
+			) {
+				//!
+				console.log("il manque qqchose !");
+			} else {
+				console.log(this.image);
+				const formData = new FormData();
+				formData.append("name", this.nameCrea);
+				formData.append("category", this.categoryCrea);
+				formData.append("brand", this.brandCrea);
+				formData.append("players_mini", this.players_miniCrea);
+				formData.append("players_maxi", this.players_maxiCrea);
+				formData.append("memberId", 5);
+				formData.append("image", this.image);
+				//! creer un perso pour "personne" avec is Admin=2
+
+				axios({
+					method: "post",
+					url: process.env.VUE_APP_API + "game/create",
+					data: formData,
+					// data: {
+					// 	name: this.nameCrea,
+					// 	category: this.categoryCrea,
+					// 	brand: this.brandCrea,
+					// 	players_mini: this.players_miniCrea,
+					// 	players_maxi: this.players_maxiCrea,
+					// 	memberId: null,
+					// 	image: this.image,
+					// },
+					headers: {
+						// content_type: "multipart/form-data",
+						// 	Authorization: `Bearer ${this.token}`,
+					},
+				})
+					.then(() => {
+						console.log("Nouveau jeu sauvegardé !");
+						this.getAllGames();
+					})
+					.catch((err) => {
+						if (err.response.data === "name must be unique") {
+							//!
+							console.log("Ce jeu existe déjà dans la liste !");
+						} else {
+							console.log(err);
+						}
+					});
+			}
+		},
 	},
 };
 </script>
@@ -382,5 +504,8 @@ input,
 #green {
 	background-color: green;
 	color: white;
+}
+.creation {
+	background-color: rgb(71, 211, 71);
 }
 </style>
