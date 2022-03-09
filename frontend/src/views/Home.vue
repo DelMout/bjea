@@ -1,6 +1,7 @@
 <template>
 	<div class="home">
 		<img src="../assets/logo_bjea.jpg" alt="logo bjea" width="100" />
+
 		<!-- <div>
 			<Button
 				id=""
@@ -12,7 +13,7 @@
 		<div>
 			<table>
 				<tr>
-					<th>Photo</th>
+					<th class="photo_head">Photo</th>
 					<th>Nom</th>
 					<th>Stock</th>
 					<th>Emprunteur</th>
@@ -26,7 +27,25 @@
 					<th class="modif_button"></th>
 				</tr>
 				<tr :class="gam.style" v-for="gam in games" :key="gam.id">
-					<td>{{ gam.photo }}</td>
+					<td class="photo photo_head">
+						<div class="photo photo_head">
+							<img
+								crossorigin="anonymous"
+								class="photo"
+								v-if="gam.photo && gam.style != 'orange'"
+								style="max-width: 5rem; max-height: 5rem; width: auto"
+								:src="gam.photo"
+								alt="boite jeu"
+							/>
+							<input
+								class="photo_head"
+								v-if="gam.style == 'orange'"
+								type="file"
+								name="image"
+								@change="onFileChange"
+							/>
+						</div>
+					</td>
 					<td>
 						<div v-if="gam.style != 'orange'">{{ gam.name }}</div>
 						<input v-if="gam.style == 'orange'" type="text" v-model="gam.name" />
@@ -106,7 +125,7 @@
 				</tr>
 				<!-- Creation a new game -->
 				<tr class="creation">
-					<th>Photo</th>
+					<th class="photo_head">Photo</th>
 					<th>Nom</th>
 					<th>Stock</th>
 					<th>Emprunteur</th>
@@ -119,12 +138,14 @@
 					<th class="short">Maxi<br />joueurs</th>
 					<th class="modif_button"></th>
 				</tr>
-				<tr class="creation">
-					<td>
-						<div class="uploadFile">
-							<button class="btn-upload">Choisir un fichier</button>
-							<input type="file" name="image" @change="onFileChange" />
-						</div>
+				<tr class="creation photo photo_head">
+					<td class="photo_head">
+						<input
+							class="creation photo_head"
+							type="file"
+							name="image"
+							@change="onFileChange"
+						/>
 					</td>
 					<td>
 						<input class="creation" type="text" v-model="nameCrea" />
@@ -163,9 +184,7 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import axios from "axios";
-// import FormData from "form-data";
 
 export default {
 	name: "Home",
@@ -404,17 +423,8 @@ export default {
 					method: "post",
 					url: process.env.VUE_APP_API + "game/create",
 					data: formData,
-					// data: {
-					// 	name: this.nameCrea,
-					// 	category: this.categoryCrea,
-					// 	brand: this.brandCrea,
-					// 	players_mini: this.players_miniCrea,
-					// 	players_maxi: this.players_maxiCrea,
-					// 	memberId: null,
-					// 	image: this.image,
-					// },
+
 					headers: {
-						// content_type: "multipart/form-data",
 						// 	Authorization: `Bearer ${this.token}`,
 					},
 				})
@@ -455,7 +465,7 @@ th {
 }
 .stock {
 	width: 10rem;
-	height: 2.5rem;
+	height: 5rem;
 	margin-left: 0;
 	cursor: pointer;
 	color: black;
@@ -507,5 +517,12 @@ input,
 }
 .creation {
 	background-color: rgb(71, 211, 71);
+}
+.photo {
+	/* width: 5rem; */
+	height: 5rem;
+}
+.photo_head {
+	width: 5rem;
 }
 </style>

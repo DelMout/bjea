@@ -1,0 +1,11 @@
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "http://localhost:3001/images"
+</IfModule>
+<IfModule mod_setenvif.c>
+  <IfModule mod_headers.c>
+    <FilesMatch "\.(bmp|cur|gif|ico|jpe?g|a?png|svgz?|webp|heic|heif|avif)$">
+      SetEnvIf Origin ":" IS_CORS
+      Header set Access-Control-Allow-Origin "*" env=*IS_CORS*
+    </FilesMatch>
+  </IfModule>
+</IfModule>
