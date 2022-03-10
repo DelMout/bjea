@@ -49,6 +49,18 @@
 				/>
 			</div>
 		</div>
+		<div style="width: 30vw">
+			<Toast position="center" :breakpoints="{ '400px': { width: '95%' } }">
+				<template #message="slotProps">
+					<div class="p-d-flex p-flex-row">
+						<div class="p-text-center">
+							<i class="pi pi-exclamation-triangle" style="font-size: 2rem"></i>
+							<p>{{ slotProps.message.detail }}</p>
+						</div>
+					</div>
+				</template>
+			</Toast>
+		</div>
 	</div>
 </template>
 <script>
@@ -68,10 +80,11 @@ export default {
 			// "token",
 			"connected",
 			// "expired",
+			"isAdmin",
 		]),
 	},
 	methods: {
-		...mapMutations(["IS_TRUE"]),
+		...mapMutations(["IS_TRUE", "setAdmin"]),
 		//* To connect
 		toConnect: function () {
 			console.log("on y est !");
@@ -81,28 +94,82 @@ export default {
 					email: this.email,
 					password: this.password,
 				})
-				.then(() => {
+				.then((member) => {
 					console.log("you are connected !");
+					const { isAdmin } = member.data;
+					// const { membId, token, isAdmin } = user.data;
 					this.$store.commit("IS_TRUE");
+					this.setAdmin(isAdmin);
+
 					console.log("connected =" + this.$store.state.connected);
+					console.log("isAdmin =" + this.$store.state.isAdmin);
+
+					// update jeton
+					axios({
+						method: "put",
+						url: process.env.VUE_APP_API + "member/newjeton/" + this.email,
+						// headers: {
+						// 	Authorization: `Bearer ${this.token}`,
+						// },
+					})
+						.then(() => {
+							this.$router.push("/");
+						})
+						.catch(() => {
+							this.$router.push("/");
+						});
 				})
 				.catch((err) => {
 					if (err.response.data === "Password not OK") {
-						// this.$toast.add({
-						// 	severity: "error",
-						// 	detail: "Mot de passe incorrect !",
-						// 	closable: false,
-						// 	life: 4000,
-						// });
+						this.$toast.add({
+							severity: "error",
+							detail: "Mot de passe incorrect !",
+							closable: false,
+							life: 4000,
+						});
 					} else {
-						// this.$toast.add({
-						// 	severity: "error",
-						// 	detail: "Email inconnu !",
-						// 	closable: false,
-						// 	life: 4000,
-						// });
+						this.$toast.add({
+							severity: "error",
+							detail: "Email inconnu !",
+							closable: false,
+							life: 4000,
+						});
 					}
 				});
+		},
+
+		//* Password forgotten
+		forgotten: function () {
+			this.forgot = true;
+		},
+
+		//* Send email for forgotten password
+		sendLinkPassword: function () {
+			axios
+				.post(process.env.VUE_APP_API + "member/emailpassword/" + this.email)
+				.then(() => {
+					console.log("email sent!");
+					this.$toast.add({
+						severity: "info",
+						detail: "Email envoyé !",
+						closable: false,
+						life: 4000,
+					});
+					this.forgot = false;
+				})
+				.catch(() => {
+					this.$toast.add({
+						severity: "error",
+						detail: "Cette adresse email ne correspond à aucun compte.",
+						closable: false,
+						life: 4000,
+					});
+				});
+		},
+
+		//* Press Enter on password cell
+		enter: function () {
+			this.toConnect();
 		},
 	},
 };
@@ -110,8 +177,12 @@ export default {
 <style scoped>
 #access {
 	color: white;
+	display: flex;
+	flex-direction: column;
 }
-
+h1 {
+	margin-top: 7rem;
+}
 #login {
 	/* background-color: pink; */
 	margin-top: 3vh;

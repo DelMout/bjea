@@ -215,7 +215,7 @@ exports.emailPassword = (req, res) => {
 						nom +
 						",</p></br>" +
 						message +
-						"</br><a href='http://cinema.noyant.delmout.com/setpassword/" +
+						"</br><a href='http://localhost:8080/setpassword/" +
 						jeton +
 						"'>Saisir un nouveau mot de passe</a></br></br><p>Merci de ne pas répondre à cet email.</p>",
 				},
@@ -246,9 +246,13 @@ exports.emailInfo = (req, res) => {
 	});
 
 	//! Mettre lien en https du site
-	// List of members
+	// List of members (excepted isAdmin=2)
 	member
-		.findAndCountAll()
+		.findAndCountAll({
+			where: {
+				[Op.or]: [{ isAdmin: 0 }, { isAdmin: 1 }],
+			},
+		})
 		.then((members) => {
 			const count = members.count;
 			for (let i = 0; i < count; i++) {
@@ -260,7 +264,7 @@ exports.emailInfo = (req, res) => {
 						subject: "[BJEA] " + req.body.title,
 						html:
 							req.body.content +
-							"<br/><a href='https://cinema.noyant.delmout.com'>Voir les permanences des bénévoles</a><br/><br/><p>Merci de ne pas répondre à cet email</p><p>L'administration de l'équipe Cinéma de Noyant</p>",
+							"</br></br><p>Merci de ne pas répondre à cet email.</p>",
 					},
 					(error, info) => {
 						if (error) {

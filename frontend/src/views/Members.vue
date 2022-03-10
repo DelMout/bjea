@@ -1,9 +1,9 @@
 <template>
-	<div>
+	<div id="member">
 		<h1>Liste des adhérents</h1>
 		<div>
 			<Button
-				id=""
+				id="addmember"
 				label="Ajouter un adhérent"
 				class="p-button-raised p-button-success"
 				@click="wantCreateMember"
@@ -15,39 +15,112 @@
 					<th>Prénom</th>
 					<th>Nom</th>
 					<th>Email</th>
-					<th>Cotisation 2021/2022</th>
-					<th>Caution</th>
+					<th class="short">Cotisation<br />2021/2022</th>
+					<th class="short">Caution</th>
 				</tr>
 				<tr v-for="memb in members" :key="memb.id">
 					<td>{{ memb.first_name }}</td>
 					<td>{{ memb.last_name }}</td>
 					<td>{{ memb.email }}</td>
-					<td>{{ memb.cotisation }}</td>
-					<td>{{ memb.caution }}</td>
+					<td class="short">
+						<button
+							v-if="memb.cotisation > 0"
+							class="payment done"
+							@click="changeCotisation($event, memb)"
+						>
+							Payée
+						</button>
+						<button
+							v-if="memb.cotisation === 0"
+							class="payment no_done"
+							@click="changeCotisation($event, memb)"
+						>
+							Non<br />
+							payée
+						</button>
+					</td>
+					<td class="short">
+						<button
+							v-if="memb.caution > 0"
+							class="payment done"
+							@click="changeCaution($event, memb)"
+						>
+							Versée
+						</button>
+						<button
+							v-if="memb.caution === 0"
+							class="payment no_done"
+							@click="changeCaution($event, memb)"
+						>
+							Non<br />
+							Versée
+						</button>
+					</td>
 				</tr>
+				<!-- Creation of new member -->
 				<tr class="creation">
 					<th>Prénom</th>
 					<th>Nom</th>
 					<th>Email</th>
-					<th>Cotisation 2021/2022</th>
-					<th>Caution</th>
+					<th class="short">Cotisation<br />2021/2022</th>
+					<th class="short">Caution</th>
 				</tr>
 				<tr class="creation">
 					<td><input type="text" class="" v-model="first_name" /></td>
 					<td><input type="text" class="" v-model="last_name" /></td>
 					<td><input type="text" class="" v-model="email" /></td>
-					<td><input type="text" class="" v-model="cotisation" /></td>
-					<td><input type="text" class="" v-model="caution" /></td>
+					<td class="short">
+						<button
+							v-if="cotisation > 0"
+							class="payment done"
+							@click="changeCreaCotisation"
+						>
+							Payée
+						</button>
+						<button
+							v-if="cotisation === 0"
+							class="payment no_done"
+							@click="changeCreaCotisation"
+						>
+							Non<br />
+							payée
+						</button>
+					</td>
+					<td class="short">
+						<button v-if="caution > 0" class="payment done" @click="changeCreaCaution">
+							Versée
+						</button>
+						<button
+							v-if="caution === 0"
+							class="payment no_done"
+							@click="changeCreaCaution"
+						>
+							Non<br />
+							Versée
+						</button>
+					</td>
 				</tr>
 			</table>
 		</div>
 		<div>
 			<Button
-				id=""
+				id="createmember"
 				label="Valider nouvel adhérent"
 				class="p-button-raised p-button-success"
 				@click="saveMember"
 			/>
+		</div>
+		<div style="width: 30vw">
+			<Toast position="center" :breakpoints="{ '400px': { width: '95%' } }">
+				<template #message="slotProps">
+					<div class="p-d-flex p-flex-row">
+						<div class="p-text-center">
+							<i class="pi pi-exclamation-triangle" style="font-size: 2rem"></i>
+							<p>{{ slotProps.message.detail }}</p>
+						</div>
+					</div>
+				</template>
+			</Toast>
 		</div>
 	</div>
 </template>
@@ -61,8 +134,9 @@ export default {
 			first_name: "",
 			last_name: "",
 			email: "",
-			cotisation: "",
-			caution: "",
+			cotisation: 1,
+			caution: 0,
+			cotisation_value: "",
 		};
 	},
 	created: function () {
@@ -102,11 +176,78 @@ export default {
 			});
 		},
 
+		//* Change status of Cotisation (in modification)
+		changeCotisation: function (event, memb) {
+			if (memb.cotisation === 0) {
+				this.cotisation_value = 1;
+			} else {
+				this.cotisation_value = 0;
+			}
+			axios({
+				method: "put",
+				url:
+					process.env.VUE_APP_API +
+					"member/cotisation/" +
+					memb.id +
+					"/" +
+					this.cotisation_value,
+			}).then(() => {
+				this.getAllMembers();
+			});
+		},
+
+		//* Change status of Caution (in modification)
+		changeCaution: function (event, memb) {
+			if (memb.caution === 0) {
+				this.caution_value = 1;
+			} else {
+				this.caution_value = 0;
+			}
+			axios({
+				method: "put",
+				url:
+					process.env.VUE_APP_API +
+					"member/caution/" +
+					memb.id +
+					"/" +
+					this.caution_value,
+			}).then(() => {
+				this.getAllMembers();
+			});
+		},
+
+		//* Change status of Cotisation (in creation of member)
+		changeCreaCotisation: function () {
+			if (this.cotisation === 0) {
+				this.cotisation = 1;
+			} else {
+				this.cotisation = 0;
+			}
+		},
+
+		//* Change status of Caution (in creation of member)
+		changeCreaCaution: function () {
+			if (this.caution === 0) {
+				this.caution = 1;
+			} else {
+				this.caution = 0;
+			}
+		},
+
+		//* Want create a new member (scroll down on the page)
+		wantCreateMember: function () {
+			window.scrollTo(0, document.body.scrollHeight);
+		},
+
 		//* Save new member
 		saveMember: function () {
 			if (this.first_name === "" || this.last_name === "" || this.email === "") {
-				//!
-				console.log("Le prénom, nom et email doivent être renseignés !");
+				this.$toast.add({
+					severity: "error",
+					detail: "Le prénom, nom et email doivent être renseignés !",
+					closable: false,
+					life: 4000,
+				});
 			} else {
 				axios({
 					method: "post",
@@ -119,19 +260,57 @@ export default {
 						caution: this.caution,
 						password: null,
 					},
-				}).then(() => {
-					//!
-					console.log("Nouvel adhérent créé !");
-					this.getAllMembers();
-				});
+				})
+					.then(() => {
+						this.$toast.add({
+							severity: "success",
+							detail: "Nouvel adhérent créé !",
+							closable: false,
+							life: 4000,
+						});
+						this.getAllMembers();
+						this.email = "";
+						this.last_name = "";
+						this.first_name = "";
+						this.cotisation = 1;
+						this.caution = 0;
+					})
+					.catch((err) => {
+						if (err.response.data === "email must be unique") {
+							this.$toast.add({
+								severity: "error",
+								detail: "Cette adresse email est déjà affectée à un adhérent.",
+								closable: false,
+								life: 4000,
+							});
+						} else {
+							this.$toast.add({
+								severity: "error",
+								detail: err,
+								closable: false,
+								life: 4000,
+							});
+						}
+					});
 			}
 		},
 	},
 };
 </script>
 <style scoped>
-div {
-	color: white;
+#member {
+	display: flex;
+	flex-direction: column;
+}
+h1 {
+	margin-top: 7rem;
+}
+#addmember {
+	margin-bottom: 1rem;
+}
+#createmember {
+	margin-bottom: 2rem;
+	margin-top: 1rem;
 }
 table {
 	margin: auto;
@@ -143,13 +322,32 @@ td,
 th {
 	border: 5px solid rgb(63, 12, 78);
 	width: 10rem;
-	height: 2.5rem;
+	height: 3rem;
 }
 .creation {
 	background-color: white;
 }
 input {
 	width: 10rem;
-	height: 2.5rem;
+	height: 3rem;
+}
+.payment {
+	width: 7rem;
+	height: 3rem;
+	margin-left: 0;
+	cursor: pointer;
+	color: black;
+	font-size: 0.9rem;
+	font-family: Arial, Helvetica, sans-serif;
+}
+.done {
+	background-color: rgb(20, 243, 39);
+}
+.no_done {
+	background-color: rgb(231, 28, 28);
+	color: white;
+}
+.short {
+	width: 7rem;
 }
 </style>

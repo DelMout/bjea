@@ -1,10 +1,10 @@
 <template>
 	<div class="home">
-		<img src="../assets/logo_bjea.jpg" alt="logo bjea" width="100" />
-
+		<h1>Liste JEUX</h1>
 		<div>
 			<Button
-				id=""
+				v-if="connected"
+				id="wantcreate"
 				label="Ajouter un jeu"
 				class="p-button-raised p-button-success"
 				@click="wantCreateGame"
@@ -12,11 +12,35 @@
 		</div>
 		<div>
 			<table>
+				<tr id="sort">
+					<th class="photo_head"></th>
+					<th>
+						<button class="short sort_button" type="button" @click="getAllGames">
+							<span class="pi pi-sort-alpha-down"></span>
+						</button>
+					</th>
+					<th></th>
+					<th v-if="connected"></th>
+					<th>
+						<button class="short sort_button" type="button" @click="sortCategories">
+							<span class="pi pi-sort-alpha-down"></span>
+						</button>
+					</th>
+					<th></th>
+					<th class="short"></th>
+					<th class="short">
+						<button class="short sort_button" type="button" @click="sortMaxiPlayers">
+							<span class="pi pi-sort-numeric-down"></span>
+						</button>
+					</th>
+					<th v-if="connected" class="modif_button"></th>
+				</tr>
+
 				<tr>
 					<th class="photo_head">Photo</th>
 					<th>Nom</th>
 					<th>Stock</th>
-					<th>Emprunteur</th>
+					<th v-if="connected">Emprunteur</th>
 					<th>Catégorie</th>
 					<th>Marque</th>
 					<th class="short">
@@ -24,7 +48,7 @@
 						joueurs
 					</th>
 					<th class="short">Maxi<br />joueurs</th>
-					<th class="modif_button"></th>
+					<th v-if="connected" class="modif_button"></th>
 				</tr>
 				<tr :class="gam.style" v-for="gam in games" :key="gam.id">
 					<td class="photo photo_head">
@@ -47,7 +71,7 @@
 						</div>
 					</td>
 					<td>
-						<div v-if="gam.style != 'orange'">{{ gam.name }}</div>
+						<div id="name" v-if="gam.style != 'orange'">{{ gam.name }}</div>
 						<input v-if="gam.style == 'orange'" type="text" v-model="gam.name" />
 					</td>
 					<td>
@@ -68,7 +92,7 @@
 							SORTI
 						</button>
 					</td>
-					<td @click="wantChooseMember($event, gam)">
+					<td v-if="connected" @click="wantChooseMember($event, gam)">
 						<div v-if="gam.wantToOOS === 0">{{ gam.name_member }}</div>
 						<Dropdown
 							v-if="gam.wantToOOS > 0"
@@ -114,7 +138,7 @@
 							v-model="gam.players_maxi"
 						/>
 					</td>
-					<td class="modif_button">
+					<td v-if="connected" class="modif_button">
 						<Button
 							:id="gam.style_modif"
 							:label="gam.modif"
@@ -124,7 +148,7 @@
 					</td>
 				</tr>
 				<!-- Creation a new game -->
-				<tr class="creation">
+				<tr v-if="connected" class="creation">
 					<th class="photo_head">Photo</th>
 					<th>Nom</th>
 					<th>Stock</th>
@@ -138,7 +162,7 @@
 					<th class="short">Maxi<br />joueurs</th>
 					<th class="modif_button"></th>
 				</tr>
-				<tr class="creation photo photo_head">
+				<tr v-if="connected" class="creation photo photo_head">
 					<td class="photo_head">
 						<input
 							class="creation photo_head"
@@ -180,11 +204,24 @@
 				</tr>
 			</table>
 		</div>
+		<div style="width: 30vw">
+			<Toast position="center" :breakpoints="{ '400px': { width: '95%' } }">
+				<template #message="slotProps">
+					<div class="p-d-flex p-flex-row">
+						<div class="p-text-center">
+							<i class="pi pi-exclamation-triangle" style="font-size: 2rem"></i>
+							<p>{{ slotProps.message.detail }}</p>
+						</div>
+					</div>
+				</template>
+			</Toast>
+		</div>
 	</div>
 </template>
 
 <script>
 import axios from "axios";
+import { mapState } from "vuex";
 
 export default {
 	name: "Home",
@@ -205,6 +242,13 @@ export default {
 			players_maxiCrea: "",
 			image: null,
 		};
+	},
+	computed: {
+		...mapState([
+			// "token",
+			"connected",
+			// "expired",
+		]),
 	},
 	created: function () {
 		this.getAllGames();
@@ -253,6 +297,108 @@ export default {
 								return -1;
 							}
 							if (nameA > nameB) {
+								return 1;
+							}
+							return 0;
+						});
+					});
+				}
+			});
+		},
+
+		//* Sort all games by maxi players
+		sortMaxiPlayers: function () {
+			this.games = [];
+			axios({
+				method: "get",
+				url: process.env.VUE_APP_API + "game/getallgames",
+			}).then((games) => {
+				for (let i = 0; i < games.data.length; i++) {
+					axios({
+						method: "get",
+						url: process.env.VUE_APP_API + "member/fromid/" + games.data[i].memberId,
+					}).then((name_member) => {
+						if (games.data[i].inStock === 0) {
+							this.styleSaved = "grey";
+						} else {
+							this.styleSaved = "purple";
+						}
+						this.games.push({
+							id: games.data[i].id,
+							photo: games.data[i].photo,
+							name: games.data[i].name,
+							category: games.data[i].category,
+							brand: games.data[i].brand,
+							players_mini: games.data[i].players_mini,
+							players_maxi: games.data[i].players_maxi,
+							inStock: games.data[i].inStock,
+							memberId: games.data[i].memberId,
+							name_member: name_member.data,
+							wantToOOS: 0,
+							style: this.styleSaved,
+							modif: "Modifier",
+							style_modif: "",
+						});
+						// sort alpha order
+						this.games.sort(function (a, b) {
+							var maxipA = a.players_maxi;
+							var maxipB = b.players_maxi;
+
+							if (maxipA < maxipB) {
+								return -1;
+							}
+							if (maxipA > maxipB) {
+								return 1;
+							}
+							return 0;
+						});
+					});
+				}
+			});
+		},
+
+		//* Sort all games by categories
+		sortCategories: function () {
+			this.games = [];
+			axios({
+				method: "get",
+				url: process.env.VUE_APP_API + "game/getallgames",
+			}).then((games) => {
+				for (let i = 0; i < games.data.length; i++) {
+					axios({
+						method: "get",
+						url: process.env.VUE_APP_API + "member/fromid/" + games.data[i].memberId,
+					}).then((name_member) => {
+						if (games.data[i].inStock === 0) {
+							this.styleSaved = "grey";
+						} else {
+							this.styleSaved = "purple";
+						}
+						this.games.push({
+							id: games.data[i].id,
+							photo: games.data[i].photo,
+							name: games.data[i].name,
+							category: games.data[i].category,
+							brand: games.data[i].brand,
+							players_mini: games.data[i].players_mini,
+							players_maxi: games.data[i].players_maxi,
+							inStock: games.data[i].inStock,
+							memberId: games.data[i].memberId,
+							name_member: name_member.data,
+							wantToOOS: 0,
+							style: this.styleSaved,
+							modif: "Modifier",
+							style_modif: "",
+						});
+						// sort alpha order
+						this.games.sort(function (a, b) {
+							var categoryA = a.category;
+							var categoryB = b.category;
+
+							if (categoryA < categoryB) {
+								return -1;
+							}
+							if (categoryA > categoryB) {
 								return 1;
 							}
 							return 0;
@@ -378,7 +524,6 @@ export default {
 				},
 			})
 				.then(() => {
-					console.log("Les modifications ont été prises en compte.");
 					this.getAllGames();
 				})
 				.catch((err) => console.log(err));
@@ -387,6 +532,11 @@ export default {
 		//* Select a photo
 		onFileChange: function (event) {
 			this.image = event.target.files[0];
+		},
+
+		//* Want create a game (scroll down on the page)
+		wantCreateGame: function () {
+			window.scrollTo(0, document.body.scrollHeight);
 		},
 
 		//* Save a new game
@@ -399,8 +549,12 @@ export default {
 				this.players_miniCrea === "" ||
 				this.players_maxiCrea === ""
 			) {
-				//!
-				console.log("il manque qqchose !");
+				this.$toast.add({
+					severity: "error",
+					detail: "Merci de renseigner un nom de jeu, une catégorie, une marque, nombre de joueurs minimum et maximum.",
+					closable: false,
+					life: 4000,
+				});
 			} else {
 				console.log(this.image);
 				const formData = new FormData();
@@ -422,15 +576,35 @@ export default {
 					},
 				})
 					.then(() => {
-						console.log("Nouveau jeu sauvegardé !");
+						this.$toast.add({
+							severity: "success",
+							detail: "Jeu créé !",
+							closable: false,
+							life: 4000,
+						});
+						this.nameCrea = "";
+						this.categoryCrea = "";
+						this.brandCrea = "";
+						this.players_miniCrea = "";
+						this.players_maxiCrea = "";
+						this.image = null;
 						this.getAllGames();
 					})
 					.catch((err) => {
 						if (err.response.data === "name must be unique") {
-							//!
-							console.log("Ce jeu existe déjà dans la liste !");
+							this.$toast.add({
+								severity: "error",
+								detail: "Ce jeu existe déjà dans la liste !",
+								closable: false,
+								life: 4000,
+							});
 						} else {
-							console.log(err);
+							this.$toast.add({
+								severity: "error",
+								detail: err,
+								closable: false,
+								life: 4000,
+							});
 						}
 					});
 			}
@@ -444,17 +618,26 @@ export default {
 	display: flex;
 	flex-direction: column;
 }
+h1 {
+	color: white;
+	margin-top: 7rem;
+}
 
 table {
 	margin: auto;
 	border-collapse: collapse;
 	background-color: rgb(189, 129, 207);
+	margin-bottom: 2rem;
 }
 td,
 th {
 	border: 5px solid rgb(63, 12, 78);
 	width: 10rem;
 	height: 2.5rem;
+}
+#name {
+	font-size: 1rem;
+	font-weight: bold;
 }
 .stock {
 	width: 10rem;
@@ -520,5 +703,21 @@ input,
 }
 .input_image {
 	margin-top: 1.5rem;
+}
+#wantcreate {
+	margin-bottom: 1rem;
+}
+#sort {
+	background-color: rgb(63, 12, 78);
+}
+.sort_button {
+	height: 2.5rem;
+	color: white;
+	background-color: rgb(63, 12, 78);
+	border: 5px solid rgb(63, 12, 78);
+	cursor: pointer;
+}
+span {
+	font-size: 1.5rem;
 }
 </style>
