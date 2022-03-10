@@ -2,6 +2,14 @@
 	<div>
 		<h1>Liste des adhérents</h1>
 		<div>
+			<Button
+				id=""
+				label="Ajouter un adhérent"
+				class="p-button-raised p-button-success"
+				@click="wantCreateMember"
+			/>
+		</div>
+		<div>
 			<table>
 				<tr>
 					<th>Prénom</th>
@@ -17,7 +25,29 @@
 					<td>{{ memb.cotisation }}</td>
 					<td>{{ memb.caution }}</td>
 				</tr>
+				<tr class="creation">
+					<th>Prénom</th>
+					<th>Nom</th>
+					<th>Email</th>
+					<th>Cotisation 2021/2022</th>
+					<th>Caution</th>
+				</tr>
+				<tr class="creation">
+					<td><input type="text" class="" v-model="first_name" /></td>
+					<td><input type="text" class="" v-model="last_name" /></td>
+					<td><input type="text" class="" v-model="email" /></td>
+					<td><input type="text" class="" v-model="cotisation" /></td>
+					<td><input type="text" class="" v-model="caution" /></td>
+				</tr>
 			</table>
+		</div>
+		<div>
+			<Button
+				id=""
+				label="Valider nouvel adhérent"
+				class="p-button-raised p-button-success"
+				@click="saveMember"
+			/>
 		</div>
 	</div>
 </template>
@@ -28,6 +58,11 @@ export default {
 	data() {
 		return {
 			members: [],
+			first_name: "",
+			last_name: "",
+			email: "",
+			cotisation: "",
+			caution: "",
 		};
 	},
 	created: function () {
@@ -36,6 +71,7 @@ export default {
 	methods: {
 		//* Get all members
 		getAllMembers: function () {
+			this.members = [];
 			axios({
 				method: "get",
 				url: process.env.VUE_APP_API + "member/getallmembers",
@@ -65,6 +101,31 @@ export default {
 				}
 			});
 		},
+
+		//* Save new member
+		saveMember: function () {
+			if (this.first_name === "" || this.last_name === "" || this.email === "") {
+				//!
+				console.log("Le prénom, nom et email doivent être renseignés !");
+			} else {
+				axios({
+					method: "post",
+					url: process.env.VUE_APP_API + "member/create",
+					data: {
+						email: this.email,
+						last_name: this.last_name,
+						first_name: this.first_name,
+						cotisation: this.cotisation,
+						caution: this.caution,
+						password: null,
+					},
+				}).then(() => {
+					//!
+					console.log("Nouvel adhérent créé !");
+					this.getAllMembers();
+				});
+			}
+		},
 	},
 };
 </script>
@@ -81,6 +142,13 @@ table {
 td,
 th {
 	border: 5px solid rgb(63, 12, 78);
+	width: 10rem;
+	height: 2.5rem;
+}
+.creation {
+	background-color: white;
+}
+input {
 	width: 10rem;
 	height: 2.5rem;
 }

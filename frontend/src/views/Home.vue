@@ -2,14 +2,14 @@
 	<div class="home">
 		<img src="../assets/logo_bjea.jpg" alt="logo bjea" width="100" />
 
-		<!-- <div>
+		<div>
 			<Button
 				id=""
 				label="Ajouter un jeu"
 				class="p-button-raised p-button-success"
 				@click="wantCreateGame"
 			/>
-		</div> -->
+		</div>
 		<div>
 			<table>
 				<tr>
@@ -38,7 +38,7 @@
 								alt="boite jeu"
 							/>
 							<input
-								class="photo_head"
+								class="photo_head input_image"
 								v-if="gam.style == 'orange'"
 								type="file"
 								name="image"
@@ -318,7 +318,7 @@ export default {
 		//* Display list of members
 		displayMembers: function () {
 			this.members = [];
-			axios.get(process.env.VUE_APP_API + "member/getallmembers").then((memb) => {
+			axios.get(process.env.VUE_APP_API + "member/getmemberswithcaution").then((memb) => {
 				for (let i = 0; i < memb.data.length; i++) {
 					this.members.push({
 						name: memb.data[i].first_name + " " + memb.data[i].last_name,
@@ -359,28 +359,21 @@ export default {
 
 		//* Save modifications of game datas
 		saveModifications: function (event, gam) {
-			// const formData = new FormData();
-			// formData.append("name", gam.name);
-			// formData.append("category", this.categoryModel);
-			// formData.append("brand", gam.brand);
-			// formData.append("players_mini", gam.players_mini);
-			// formData.append("players_maxi", gam.players_maxi);
-			// console.log(gam.id);
+			const formData = new FormData();
+			formData.append("name", gam.name);
+			formData.append("category", this.categoryModel);
+			formData.append("brand", gam.brand);
+			formData.append("players_mini", gam.players_mini);
+			formData.append("players_maxi", gam.players_maxi);
+			console.log(gam.id);
 
-			//!formData.append("image", this.image);
+			formData.append("image", this.image);
 			axios({
 				method: "put",
 				url: process.env.VUE_APP_API + "game/modifygame/" + gam.id,
-				data: {
-					name: gam.name,
-					category: this.categoryModel,
-					brand: gam.brand,
-					players_mini: gam.players_mini,
-					players_maxi: gam.players_maxi,
-					//image:this.image
-				},
+
+				data: formData,
 				headers: {
-					content_type: "multipart/form-data",
 					// 	Authorization: `Bearer ${this.token}`,
 				},
 			})
@@ -398,6 +391,7 @@ export default {
 
 		//* Save a new game
 		creaGame: function () {
+			console.log(process.env.VUE_APP_NOBODY);
 			if (
 				this.nameCrea === "" ||
 				this.categoryCrea === "" ||
@@ -415,9 +409,8 @@ export default {
 				formData.append("brand", this.brandCrea);
 				formData.append("players_mini", this.players_miniCrea);
 				formData.append("players_maxi", this.players_maxiCrea);
-				formData.append("memberId", 5);
+				formData.append("memberId", process.env.VUE_APP_NOBODY);
 				formData.append("image", this.image);
-				//! creer un perso pour "personne" avec is Admin=2
 
 				axios({
 					method: "post",
@@ -524,5 +517,8 @@ input,
 }
 .photo_head {
 	width: 5rem;
+}
+.input_image {
+	margin-top: 1.5rem;
 }
 </style>

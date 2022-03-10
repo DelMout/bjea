@@ -17,8 +17,8 @@ exports.createGame = (req, res) => {
 			res.status(200).send("New game created !");
 		})
 		.catch((err) => {
-			// res.status(401).send(err);
-			res.status(401).send(err.errors[0].message);
+			res.status(401).send(err);
+			// res.status(401).send(err.errors[0].message);
 		});
 };
 

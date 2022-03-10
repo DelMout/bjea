@@ -16,11 +16,19 @@ exports.createMember = (req, res) => {
 	for (let i = 0; i < 25; i++) {
 		jeton += characters[Math.floor(Math.random() * characters.length)];
 	}
-	const newMember = new member({
-		...req.body,
-		jeton: jeton,
-		password: bcrypt.hashSync(req.body.password, 10),
-	});
+	if (req.body.password != null) {
+		var newMember = new member({
+			...req.body,
+			jeton: jeton,
+			password: bcrypt.hashSync(req.body.password, 10),
+		});
+	} else {
+		var newMember = new member({
+			...req.body,
+			jeton: jeton,
+		});
+	}
+
 	newMember
 		.save()
 		.then((memb) => {
@@ -72,11 +80,30 @@ exports.login = (req, res) => {
 		});
 };
 
-// * Get all members
+// * Get all members (excepted isAdmin=2)
 exports.getAllMembers = (req, res) => {
-	member.findAll({}).then((obj) => {
-		res.send(obj);
-	});
+	member
+		.findAll({
+			where: {
+				[Op.or]: [{ isAdmin: 0 }, { isAdmin: 1 }],
+			},
+		})
+		.then((obj) => {
+			res.send(obj);
+		});
+};
+
+// * Get  members with caution=1
+exports.getMembersWithCaution = (req, res) => {
+	member
+		.findAll({
+			where: {
+				caution: 1,
+			},
+		})
+		.then((obj) => {
+			res.send(obj);
+		});
 };
 
 // * Modif password

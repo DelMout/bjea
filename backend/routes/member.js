@@ -11,8 +11,11 @@ router.post("/create", memberCtrl.createMember); //!  admin
 // * Login for a member admin
 router.post("/login", memberCtrl.login);
 
-// * Get all members
+// * Get all members (excepted isAdmin=2)
 router.get("/getallmembers", memberCtrl.getAllMembers); //!  admin
+
+// * Get all members (with caution=1)
+router.get("/getmemberswithcaution", memberCtrl.getMembersWithCaution); //!  admin
 
 // * Modify password after lost
 router.put("/password/:jeton", memberCtrl.updatePassword);
