@@ -76,15 +76,10 @@ export default {
 		};
 	},
 	computed: {
-		...mapState([
-			// "token",
-			"connected",
-			// "expired",
-			"isAdmin",
-		]),
+		...mapState(["token", "connected", "expired", "isAdmin"]),
 	},
 	methods: {
-		...mapMutations(["IS_TRUE", "setAdmin"]),
+		...mapMutations(["IS_TRUE", "setAdmin", "setToken"]),
 		//* To connect
 		toConnect: function () {
 			console.log("on y est !");
@@ -96,26 +91,26 @@ export default {
 				})
 				.then((member) => {
 					console.log("you are connected !");
-					const { isAdmin } = member.data;
-					// const { membId, token, isAdmin } = user.data;
+					const { token, isAdmin } = member.data;
 					this.$store.commit("IS_TRUE");
 					this.setAdmin(isAdmin);
-
-					console.log("connected =" + this.$store.state.connected);
-					console.log("isAdmin =" + this.$store.state.isAdmin);
+					this.setToken(token);
 
 					// update jeton
 					axios({
 						method: "put",
 						url: process.env.VUE_APP_API + "member/newjeton/" + this.email,
-						// headers: {
-						// 	Authorization: `Bearer ${this.token}`,
-						// },
+						headers: {
+							Authorization: `Bearer ${this.token}`,
+						},
 					})
 						.then(() => {
+							console.log("jeton OK");
 							this.$router.push("/");
 						})
 						.catch(() => {
+							console.log("jeton NOT OK");
+
 							this.$router.push("/");
 						});
 				})
@@ -198,8 +193,6 @@ h1 {
 	text-align: left;
 	display: flex;
 	flex-direction: column;
-}
-#login > div > p {
 }
 #email {
 	width: 100%;

@@ -31,7 +31,7 @@
 </template>
 <script>
 import axios from "axios";
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations, mapActions } from "vuex";
 
 export default {
 	data() {
@@ -46,11 +46,11 @@ export default {
 		this.findDatas();
 	},
 	computed: {
-		...mapState(["userId"]),
+		...mapState(["token", "connected", "expired", "isAdmin"]),
 	},
 	methods: {
-		// ...mapActions(["checkConnect"]),
-		...mapMutations(["IS_TRUE", "setAdmin"]),
+		...mapActions(["checkConnect"]),
+		...mapMutations(["IS_TRUE", "setAdmin", "setToken"]),
 		//* Find datas user from jeton
 		findDatas: function () {
 			axios({
@@ -77,20 +77,21 @@ export default {
 							password: this.password,
 						})
 						.then((memb) => {
-							const { isAdmin } = memb.data;
+							const { token, isAdmin } = memb.data;
 							this.$store.commit("IS_TRUE");
 							this.setAdmin(isAdmin);
+							this.setToken(token);
 							// this.$store.commit("setExpired", false);
-							// this.$store.dispatch("checkConnect");
+							this.$store.dispatch("checkConnect");
 							this.$router.push("/");
 
 							// update jeton
 							axios({
 								method: "put",
 								url: process.env.VUE_APP_API + "member/newjeton/" + this.email,
-								// headers: {
-								// 	Authorization: `Bearer ${this.token}`,
-								// },
+								headers: {
+									Authorization: `Bearer ${this.token}`,
+								},
 							})
 								.then(() => {
 									this.$router.push("/");

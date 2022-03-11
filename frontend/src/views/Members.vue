@@ -126,6 +126,7 @@
 </template>
 <script>
 import axios from "axios";
+import { mapState, mapActions } from "vuex";
 
 export default {
 	data() {
@@ -139,81 +140,109 @@ export default {
 			cotisation_value: "",
 		};
 	},
+	computed: {
+		...mapState(["connected", "token"]),
+	},
 	created: function () {
 		this.getAllMembers();
 	},
 	methods: {
+		...mapActions(["checkConnect"]),
 		//* Get all members
 		getAllMembers: function () {
-			this.members = [];
-			axios({
-				method: "get",
-				url: process.env.VUE_APP_API + "member/getallmembers",
-			}).then((memb) => {
-				for (let i = 0; i < memb.data.length; i++) {
-					this.members.push({
-						id: memb.data[i].id,
-						first_name: memb.data[i].first_name,
-						last_name: memb.data[i].last_name,
-						email: memb.data[i].email,
-						cotisation: memb.data[i].cotisation,
-						caution: memb.data[i].caution,
-					});
-					// sort alpha order
-					this.members.sort(function (a, b) {
-						var first_nameA = a.first_name;
-						var first_nameB = b.first_name;
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
+			} else {
+				this.members = [];
+				axios({
+					method: "get",
+					url: process.env.VUE_APP_API + "member/getallmembers",
+					headers: {
+						Authorization: `Bearer ${this.token}`,
+					},
+				}).then((memb) => {
+					for (let i = 0; i < memb.data.length; i++) {
+						this.members.push({
+							id: memb.data[i].id,
+							first_name: memb.data[i].first_name,
+							last_name: memb.data[i].last_name,
+							email: memb.data[i].email,
+							cotisation: memb.data[i].cotisation,
+							caution: memb.data[i].caution,
+						});
+						// sort alpha order
+						this.members.sort(function (a, b) {
+							var first_nameA = a.first_name;
+							var first_nameB = b.first_name;
 
-						if (first_nameA < first_nameB) {
-							return -1;
-						}
-						if (first_nameA > first_nameB) {
-							return 1;
-						}
-						return 0;
-					});
-				}
-			});
+							if (first_nameA < first_nameB) {
+								return -1;
+							}
+							if (first_nameA > first_nameB) {
+								return 1;
+							}
+							return 0;
+						});
+					}
+				});
+			}
 		},
 
 		//* Change status of Cotisation (in modification)
 		changeCotisation: function (event, memb) {
-			if (memb.cotisation === 0) {
-				this.cotisation_value = 1;
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
 			} else {
-				this.cotisation_value = 0;
+				if (memb.cotisation === 0) {
+					this.cotisation_value = 1;
+				} else {
+					this.cotisation_value = 0;
+				}
+				axios({
+					method: "put",
+					url:
+						process.env.VUE_APP_API +
+						"member/cotisation/" +
+						memb.id +
+						"/" +
+						this.cotisation_value,
+					headers: {
+						Authorization: `Bearer ${this.token}`,
+					},
+				}).then(() => {
+					this.getAllMembers();
+				});
 			}
-			axios({
-				method: "put",
-				url:
-					process.env.VUE_APP_API +
-					"member/cotisation/" +
-					memb.id +
-					"/" +
-					this.cotisation_value,
-			}).then(() => {
-				this.getAllMembers();
-			});
 		},
 
 		//* Change status of Caution (in modification)
 		changeCaution: function (event, memb) {
-			if (memb.caution === 0) {
-				this.caution_value = 1;
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
 			} else {
-				this.caution_value = 0;
+				if (memb.caution === 0) {
+					this.caution_value = 1;
+				} else {
+					this.caution_value = 0;
+				}
+				axios({
+					method: "put",
+					url:
+						process.env.VUE_APP_API +
+						"member/caution/" +
+						memb.id +
+						"/" +
+						this.caution_value,
+					headers: {
+						Authorization: `Bearer ${this.token}`,
+					},
+				}).then(() => {
+					this.getAllMembers();
+				});
 			}
-			axios({
-				method: "put",
-				url:
-					process.env.VUE_APP_API +
-					"member/caution/" +
-					memb.id +
-					"/" +
-					this.caution_value,
-			}).then(() => {
-				this.getAllMembers();
-			});
 		},
 
 		//* Change status of Cotisation (in creation of member)
@@ -241,57 +270,65 @@ export default {
 
 		//* Save new member
 		saveMember: function () {
-			if (this.first_name === "" || this.last_name === "" || this.email === "") {
-				this.$toast.add({
-					severity: "error",
-					detail: "Le prénom, nom et email doivent être renseignés !",
-					closable: false,
-					life: 4000,
-				});
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
 			} else {
-				axios({
-					method: "post",
-					url: process.env.VUE_APP_API + "member/create",
-					data: {
-						email: this.email,
-						last_name: this.last_name,
-						first_name: this.first_name,
-						cotisation: this.cotisation,
-						caution: this.caution,
-						password: null,
-					},
-				})
-					.then(() => {
-						this.$toast.add({
-							severity: "success",
-							detail: "Nouvel adhérent créé !",
-							closable: false,
-							life: 4000,
-						});
-						this.getAllMembers();
-						this.email = "";
-						this.last_name = "";
-						this.first_name = "";
-						this.cotisation = 1;
-						this.caution = 0;
-					})
-					.catch((err) => {
-						if (err.response.data === "email must be unique") {
-							this.$toast.add({
-								severity: "error",
-								detail: "Cette adresse email est déjà affectée à un adhérent.",
-								closable: false,
-								life: 4000,
-							});
-						} else {
-							this.$toast.add({
-								severity: "error",
-								detail: err,
-								closable: false,
-								life: 4000,
-							});
-						}
+				if (this.first_name === "" || this.last_name === "" || this.email === "") {
+					this.$toast.add({
+						severity: "error",
+						detail: "Le prénom, nom et email doivent être renseignés !",
+						closable: false,
+						life: 4000,
 					});
+				} else {
+					axios({
+						method: "post",
+						url: process.env.VUE_APP_API + "member/create",
+						data: {
+							email: this.email,
+							last_name: this.last_name,
+							first_name: this.first_name,
+							cotisation: this.cotisation,
+							caution: this.caution,
+							password: null,
+						},
+						headers: {
+							Authorization: `Bearer ${this.token}`,
+						},
+					})
+						.then(() => {
+							this.$toast.add({
+								severity: "success",
+								detail: "Nouvel adhérent créé !",
+								closable: false,
+								life: 4000,
+							});
+							this.getAllMembers();
+							this.email = "";
+							this.last_name = "";
+							this.first_name = "";
+							this.cotisation = 1;
+							this.caution = 0;
+						})
+						.catch((err) => {
+							if (err.response.data === "email must be unique") {
+								this.$toast.add({
+									severity: "error",
+									detail: "Cette adresse email est déjà affectée à un adhérent.",
+									closable: false,
+									life: 4000,
+								});
+							} else {
+								this.$toast.add({
+									severity: "error",
+									detail: err,
+									closable: false,
+									life: 4000,
+								});
+							}
+						});
+				}
 			}
 		},
 	},

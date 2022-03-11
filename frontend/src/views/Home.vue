@@ -221,7 +221,7 @@
 
 <script>
 import axios from "axios";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
 	name: "Home",
@@ -245,7 +245,7 @@ export default {
 	},
 	computed: {
 		...mapState([
-			// "token",
+			"token",
 			"connected",
 			// "expired",
 		]),
@@ -255,6 +255,8 @@ export default {
 		this.displayCategories();
 	},
 	methods: {
+		...mapActions(["checkConnect"]),
+
 		//* Get all games
 		getAllGames: function () {
 			this.games = [];
@@ -410,42 +412,54 @@ export default {
 
 		//* Move the stock of the game selected
 		moveStock: function (event, gam) {
-			if (gam.inStock === 0) {
-				axios({
-					method: "put",
-					url: process.env.VUE_APP_API + "game/intostock/" + gam.id,
-					// headers: {
-					// 			Authorization: `Bearer ${this.token}`,
-					// 		},
-				}).then(() => {
-					this.getAllGames();
-				});
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
 			} else {
-				if (this.gameId != gam.id) {
-					//Compare gameId of members's dropdown and gameId of button EN STOCK / SORTI
-					if (this.gameId == "") {
-						console.log(this.gameId);
-						console.log(
-							"Merci de sélectionner le nom de l'emprunteur avant de sortir le jeu du stock."
-						);
-					} else {
-						console.log("Vous venez de sélectionner un membre pour un autre jeu !");
-					}
-				} else {
+				if (gam.inStock === 0) {
 					axios({
 						method: "put",
-						url:
-							process.env.VUE_APP_API +
-							"game/outofstock/" +
-							gam.id +
-							"/" +
-							this.memberModel,
-						// headers: {
-						// 			Authorization: `Bearer ${this.token}`,
-						// 		},
+						url: process.env.VUE_APP_API + "game/intostock/" + gam.id,
+						headers: {
+							Authorization: `Bearer ${this.token}`,
+						},
 					}).then(() => {
 						this.getAllGames();
 					});
+				} else {
+					if (this.gameId != gam.id) {
+						//Compare gameId of members's dropdown and gameId of button EN STOCK / SORTI
+						if (this.gameId == "") {
+							this.$toast.add({
+								severity: "error",
+								detail: "Merci de sélectionner le nom de l'emprunteur avant de sortir le jeu du stock.",
+								closable: false,
+								life: 4000,
+							});
+						} else {
+							this.$toast.add({
+								severity: "error",
+								detail: "Vous venez de sélectionner un membre pour un autre jeu !",
+								closable: false,
+								life: 4000,
+							});
+						}
+					} else {
+						axios({
+							method: "put",
+							url:
+								process.env.VUE_APP_API +
+								"game/outofstock/" +
+								gam.id +
+								"/" +
+								this.memberModel,
+							headers: {
+								Authorization: `Bearer ${this.token}`,
+							},
+						}).then(() => {
+							this.getAllGames();
+						});
+					}
 				}
 			}
 		},
@@ -453,7 +467,12 @@ export default {
 		//* Want to choose a member (so display list of members)
 		wantChooseMember: function (event, gam) {
 			if (gam.inStock === 0) {
-				console.log("Le jeu n'est pas en stock actuellement !");
+				this.$toast.add({
+					severity: "error",
+					detail: "Le jeu n'est pas en stock actuellement !",
+					closable: false,
+					life: 4000,
+				});
 			} else {
 				gam.style = "white";
 				gam.wantToOOS = 1;
@@ -463,15 +482,26 @@ export default {
 
 		//* Display list of members
 		displayMembers: function () {
-			this.members = [];
-			axios.get(process.env.VUE_APP_API + "member/getmemberswithcaution").then((memb) => {
-				for (let i = 0; i < memb.data.length; i++) {
-					this.members.push({
-						name: memb.data[i].first_name + " " + memb.data[i].last_name,
-						id: memb.data[i].id,
-					});
-				}
-			});
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
+			} else {
+				this.members = [];
+				axios({
+					method: "get",
+					url: process.env.VUE_APP_API + "member/getmemberswithcaution",
+					headers: {
+						Authorization: `Bearer ${this.token}`,
+					},
+				}).then((memb) => {
+					for (let i = 0; i < memb.data.length; i++) {
+						this.members.push({
+							name: memb.data[i].first_name + " " + memb.data[i].last_name,
+							id: memb.data[i].id,
+						});
+					}
+				});
+			}
 		},
 
 		//* Modify datas of a game
@@ -505,28 +535,39 @@ export default {
 
 		//* Save modifications of game datas
 		saveModifications: function (event, gam) {
-			const formData = new FormData();
-			formData.append("name", gam.name);
-			formData.append("category", this.categoryModel);
-			formData.append("brand", gam.brand);
-			formData.append("players_mini", gam.players_mini);
-			formData.append("players_maxi", gam.players_maxi);
-			console.log(gam.id);
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
+			} else {
+				const formData = new FormData();
+				formData.append("name", gam.name);
+				formData.append("category", this.categoryModel);
+				formData.append("brand", gam.brand);
+				formData.append("players_mini", gam.players_mini);
+				formData.append("players_maxi", gam.players_maxi);
 
-			formData.append("image", this.image);
-			axios({
-				method: "put",
-				url: process.env.VUE_APP_API + "game/modifygame/" + gam.id,
+				formData.append("image", this.image);
+				axios({
+					method: "put",
+					url: process.env.VUE_APP_API + "game/modifygame/" + gam.id,
 
-				data: formData,
-				headers: {
-					// 	Authorization: `Bearer ${this.token}`,
-				},
-			})
-				.then(() => {
-					this.getAllGames();
+					data: formData,
+					headers: {
+						Authorization: `Bearer ${this.token}`,
+					},
 				})
-				.catch((err) => console.log(err));
+					.then(() => {
+						this.getAllGames();
+					})
+					.catch((err) => {
+						this.$toast.add({
+							severity: "error",
+							detail: err,
+							closable: false,
+							life: 4000,
+						});
+					});
+			}
 		},
 
 		//* Select a photo
@@ -541,72 +582,75 @@ export default {
 
 		//* Save a new game
 		creaGame: function () {
-			console.log(process.env.VUE_APP_NOBODY);
-			if (
-				this.nameCrea === "" ||
-				this.categoryCrea === "" ||
-				this.brandCrea === "" ||
-				this.players_miniCrea === "" ||
-				this.players_maxiCrea === ""
-			) {
-				this.$toast.add({
-					severity: "error",
-					detail: "Merci de renseigner un nom de jeu, une catégorie, une marque, nombre de joueurs minimum et maximum.",
-					closable: false,
-					life: 4000,
-				});
+			this.$store.dispatch("checkConnect");
+			if (!this.connected) {
+				this.$router.push("/");
 			} else {
-				console.log(this.image);
-				const formData = new FormData();
-				formData.append("name", this.nameCrea);
-				formData.append("category", this.categoryCrea);
-				formData.append("brand", this.brandCrea);
-				formData.append("players_mini", this.players_miniCrea);
-				formData.append("players_maxi", this.players_maxiCrea);
-				formData.append("memberId", process.env.VUE_APP_NOBODY);
-				formData.append("image", this.image);
-
-				axios({
-					method: "post",
-					url: process.env.VUE_APP_API + "game/create",
-					data: formData,
-
-					headers: {
-						// 	Authorization: `Bearer ${this.token}`,
-					},
-				})
-					.then(() => {
-						this.$toast.add({
-							severity: "success",
-							detail: "Jeu créé !",
-							closable: false,
-							life: 4000,
-						});
-						this.nameCrea = "";
-						this.categoryCrea = "";
-						this.brandCrea = "";
-						this.players_miniCrea = "";
-						this.players_maxiCrea = "";
-						this.image = null;
-						this.getAllGames();
-					})
-					.catch((err) => {
-						if (err.response.data === "name must be unique") {
-							this.$toast.add({
-								severity: "error",
-								detail: "Ce jeu existe déjà dans la liste !",
-								closable: false,
-								life: 4000,
-							});
-						} else {
-							this.$toast.add({
-								severity: "error",
-								detail: err,
-								closable: false,
-								life: 4000,
-							});
-						}
+				if (
+					this.nameCrea === "" ||
+					this.categoryCrea === "" ||
+					this.brandCrea === "" ||
+					this.players_miniCrea === "" ||
+					this.players_maxiCrea === ""
+				) {
+					this.$toast.add({
+						severity: "error",
+						detail: "Merci de renseigner un nom de jeu, une catégorie, une marque, nombre de joueurs minimum et maximum.",
+						closable: false,
+						life: 4000,
 					});
+				} else {
+					console.log(this.image);
+					const formData = new FormData();
+					formData.append("name", this.nameCrea);
+					formData.append("category", this.categoryCrea);
+					formData.append("brand", this.brandCrea);
+					formData.append("players_mini", this.players_miniCrea);
+					formData.append("players_maxi", this.players_maxiCrea);
+					formData.append("memberId", process.env.VUE_APP_NOBODY);
+					formData.append("image", this.image);
+
+					axios({
+						method: "post",
+						url: process.env.VUE_APP_API + "game/create",
+						data: formData,
+						headers: {
+							Authorization: `Bearer ${this.token}`,
+						},
+					})
+						.then(() => {
+							this.$toast.add({
+								severity: "success",
+								detail: "Jeu créé !",
+								closable: false,
+								life: 4000,
+							});
+							this.nameCrea = "";
+							this.categoryCrea = "";
+							this.brandCrea = "";
+							this.players_miniCrea = "";
+							this.players_maxiCrea = "";
+							this.image = null;
+							this.getAllGames();
+						})
+						.catch((err) => {
+							if (err.response.data === "name must be unique") {
+								this.$toast.add({
+									severity: "error",
+									detail: "Ce jeu existe déjà dans la liste !",
+									closable: false,
+									life: 4000,
+								});
+							} else {
+								this.$toast.add({
+									severity: "error",
+									detail: err,
+									closable: false,
+									life: 4000,
+								});
+							}
+						});
+				}
 			}
 		},
 	},
