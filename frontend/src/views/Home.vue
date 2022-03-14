@@ -40,10 +40,10 @@
 					<th class="photo_head">Photo</th>
 					<th>Nom</th>
 					<th>Stock</th>
-					<th v-if="connected">Emprunteur</th>
+					<th class="emprun" v-if="connected">Emprunteur</th>
 					<th>Catégorie</th>
-					<th>Marque</th>
-					<th class="short">
+					<th class="emprun">Marque</th>
+					<th class="short emprun">
 						Mini<br />
 						joueurs
 					</th>
@@ -101,13 +101,14 @@
 							:options="members"
 							optionLabel="name"
 							optionValue="id"
+							class="inputmember"
 							:placeholder="gam.name_member"
 						/>
 					</td>
 					<td>
 						<div v-if="gam.style != 'orange'">{{ gam.category }}</div>
 						<Dropdown
-							id="category"
+							class="category"
 							v-if="gam.style == 'orange'"
 							v-model="categoryModel"
 							:options="categories"
@@ -142,7 +143,7 @@
 						<Button
 							:id="gam.style_modif"
 							:label="gam.modif"
-							class="p-button-raised p-button-warning"
+							class="p-button-raised p-button-warning modif_val"
 							@click="modifGame($event, gam)"
 						/>
 					</td>
@@ -178,7 +179,7 @@
 					<td>Ne pas renseigner</td>
 					<td>
 						<Dropdown
-							class="creation"
+							class="creation category"
 							v-model="categoryCrea"
 							:options="categories"
 							optionLabel="category"
@@ -197,7 +198,7 @@
 					<td class="modif_button">
 						<Button
 							label="Ajouter"
-							class="p-button-raised p-button-success"
+							class="p-button-raised p-button-success modif_val"
 							@click="creaGame"
 						/>
 					</td>
@@ -243,12 +244,18 @@ export default {
 			image: null,
 		};
 	},
+	mounted: function () {
+		if (!this.$store.state.connected && this.$store.state.expired) {
+			this.$toast.add({
+				severity: "warn",
+				detail: "Votre session a expiré.",
+				closable: false,
+				life: 4000,
+			});
+		}
+	},
 	computed: {
-		...mapState([
-			"token",
-			"connected",
-			// "expired",
-		]),
+		...mapState(["token", "connected", "expired"]),
 	},
 	created: function () {
 		this.getAllGames();
@@ -739,7 +746,6 @@ input,
 	background-color: rgb(71, 211, 71);
 }
 .photo {
-	/* width: 5rem; */
 	height: 5rem;
 }
 .photo_head {
@@ -763,5 +769,48 @@ input,
 }
 span {
 	font-size: 1.5rem;
+}
+@media only screen and (max-width: 1500px) {
+	table {
+		font-size: 0.6rem;
+	}
+	td,
+	th {
+		border: 3px solid rgb(63, 12, 78);
+		width: 4rem;
+		word-break: break-all;
+	}
+	#name {
+		font-size: 0.6rem;
+		font-weight: 100;
+	}
+	.stock {
+		width: 4rem;
+		font-size: 0.6rem;
+	}
+	tr > .short {
+		width: 4rem;
+	}
+	.short {
+		max-width: 4rem;
+	}
+	input,
+	.category {
+		width: 4rem;
+		font-size: 0.6rem;
+	}
+
+	.modif_button,
+	.inputmember {
+		width: 4rem;
+	}
+	.emprun {
+		min-width: 4rem;
+	}
+	.modif_val {
+		font-size: 0.6rem;
+		width: 4rem;
+		font-weight: 100;
+	}
 }
 </style>

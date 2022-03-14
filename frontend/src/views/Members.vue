@@ -68,7 +68,7 @@
 				<tr class="creation">
 					<td><input type="text" class="" v-model="first_name" /></td>
 					<td><input type="text" class="" v-model="last_name" /></td>
-					<td><input type="text" class="" v-model="email" /></td>
+					<td><input type="text" class="email" v-model="email" /></td>
 					<td class="short">
 						<button
 							v-if="cotisation > 0"
@@ -386,5 +386,33 @@ input {
 }
 .short {
 	width: 7rem;
+}
+@media only screen and (max-width: 768px) {
+	table {
+		font-size: 0.8rem;
+	}
+	td,
+	th {
+		border: 3px solid rgb(63, 12, 78);
+		width: 5rem;
+		/* height: 3rem; */
+	}
+	.creation {
+		background-color: white;
+	}
+	input {
+		width: 5rem;
+		/* height: 3rem; */
+	}
+	.payment {
+		width: 5rem;
+		font-size: 0.8rem;
+	}
+	.short {
+		width: 5rem;
+	}
+	.email {
+		width: 8rem;
+	}
 }
 </style>

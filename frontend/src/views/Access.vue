@@ -21,6 +21,7 @@
 						@keyup.enter="enter"
 						v-model="password"
 						inputStyle="width:100%"
+						style="width: 100%"
 						:feedback="false"
 						toggleMask
 					>
@@ -204,5 +205,15 @@ h1 {
 #forgot {
 	margin-top: 3vh;
 	color: white;
+}
+@media only screen and (max-width: 1500px) {
+	#login {
+		width: 80%;
+	}
+	#login > div {
+		width: 60%;
+	}
+}
+@media only screen and (max-width: 768px) {
 }
 </style>

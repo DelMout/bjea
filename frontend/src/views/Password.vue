@@ -134,4 +134,22 @@ h1 {
 	display: flex;
 	flex-direction: column;
 }
+@media only screen and (max-width: 768px) {
+	#juxtaButton {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 2rem;
+		width: 60%;
+		margin: auto;
+	}
+	.field {
+		width: 60vw;
+	}
+	.fill {
+		width: 60vw;
+	}
+	.valider {
+		width: 60vw;
+	}
+}
 </style>
